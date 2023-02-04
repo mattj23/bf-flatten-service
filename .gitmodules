@@ -1,0 +1,3 @@
+[submodule "boundary-first-flattening"]
+	path = boundary-first-flattening
+	url = git@github.com:GeometryCollective/boundary-first-flattening.git

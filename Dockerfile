@@ -22,4 +22,4 @@ WORKDIR /service/
 RUN pip install -r requirements.txt
 
 EXPOSE 5000
-CMD ["bash"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "service:create()"]

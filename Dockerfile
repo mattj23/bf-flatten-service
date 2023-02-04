@@ -11,6 +11,15 @@ RUN cd /root/boundary-first-flattening \
 
 # Flask Container
 FROM python:3.10-slim-bullseye
-RUN apt-get update && apt-get install -y libcholmod3 && apt-get clean autoclean
+RUN apt-get update \
+    && apt-get install -y libcholmod3 \
+    && apt-get clean autoclean
+
 COPY --from=build /root/boundary-first-flattening/build/bff-command-line /usr/local/bin
+COPY ./service /service
+
+WORKDIR /service/
+RUN pip install -r requirements.txt
+
+EXPOSE 5000
 CMD ["bash"]

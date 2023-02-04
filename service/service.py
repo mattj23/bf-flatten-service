@@ -1,8 +1,12 @@
 import os
 import subprocess
+from typing import Optional
+
 from flask import Flask, jsonify, send_file
 from flask import request as flask_request
 from tempfile import TemporaryDirectory
+
+_arg_map = {"normalize": "--normalizeUVs", "sphere": "--mapToSphere", "disk": "--flattenToDisk"}
 
 
 def create() -> Flask:
@@ -11,10 +15,17 @@ def create() -> Flask:
     @app.route("/", methods=["GET", "POST"])
     def endpoint():
         if flask_request.method == "GET":
-            return jsonify({"status": "running",
-                            "name": "bf-flatten-service",
-                            "info": "Post an OBJ mesh file to this endpoint and it will return an OBJ file with the UV "
-                                    "coordinates calculated"})
+            return jsonify({"name": "bf-flatten-service",
+                            "info": "Post an OBJ mesh file as multi-part form data to this endpoint and it will return "
+                                    "an OBJ file with the UV coordinates calculated. Use the additional form options "
+                                    "as described in 'options' to trigger the different command line arguments for the "
+                                    "program.",
+                            "options": "cones: [int] number of cone singularities to include\n"
+                                       "normalize: any value for this key will scale uv values from 0 to 1\n"
+                                       "sphere: any value for this key flattens to a unit sphere instead of a plane\n"
+                                       "disk: any value for this key flattens to a unit circular disk"})
+
+        cones: Optional[str] = flask_request.form.get("cones")
 
         # Get files
         for name, file in flask_request.files.items():
@@ -25,6 +36,12 @@ def create() -> Flask:
                     file.save(handle)
 
                 command = ["bff-command-line", working_file, result_file]
+                if cones:
+                    command.append(f"--nCones={cones}")
+                for key, flag in _arg_map.items():
+                    if flask_request.form.get(key) is not None:
+                        command.append(flag)
+
                 process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 output, error = process.communicate()
                 if error:
@@ -43,4 +60,3 @@ def create() -> Flask:
 if __name__ == '__main__':
     application = create()
     application.run(host="0.0.0.0", port=5000, debug=True)
-

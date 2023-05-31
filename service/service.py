@@ -5,12 +5,14 @@ from typing import Optional
 from flask import Flask, jsonify, send_file
 from flask import request as flask_request
 from tempfile import TemporaryDirectory
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 _arg_map = {"normalize": "--normalizeUVs", "sphere": "--mapToSphere", "disk": "--flattenToDisk"}
 
 
 def create() -> Flask:
     app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
     @app.route("/", methods=["GET", "POST"])
     def endpoint():

@@ -27,6 +27,11 @@ docker run -p 5000:5000 bf-service
 curl http://localhost:5000
 ```
 
+### Hosting Configuration
+
+This is a normal Flask application, and so can be configured in the typical ways.  
+
+* If you want to use it with a path prefix, for example, you can set the `SCRIPT_NAME` environment variable
 
 ### Submitting Files
 
